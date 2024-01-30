@@ -4,7 +4,7 @@ import numpy as np
 import conf
 
 # Replace the URL with the IP camera's stream URL
-url = conf.url
+url = 'http://192.168.43.172/cam-hi.jpg'
 cap = cv2.VideoCapture(url)
 whT = 320
 confThreshold = 0.5
