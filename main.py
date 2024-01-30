@@ -1,7 +1,6 @@
 import cv2
 import urllib.request
 import numpy as np
-import conf
 
 # Replace the URL with the IP camera's stream URL
 url = 'http://192.168.43.172/cam-hi.jpg'
@@ -13,7 +12,6 @@ classesfile = 'coco.names'
 classNames = []
 with open(classesfile, 'rt') as f:
     classNames = f.read().rstrip('\n').split('\n')
-# print(classNames)
 
 modelConfig = 'yolov3.cfg'
 modelWeights = 'yolov3.weights'
@@ -27,8 +25,6 @@ def findObject(outputs, im):
     bbox = []
     classIds = []
     confs = []
-    found_cat = False
-    found_bird = False
     for output in outputs:
         for det in output:
             scores = det[5:]
@@ -40,35 +36,18 @@ def findObject(outputs, im):
                 bbox.append([x, y, w, h])
                 classIds.append(classId)
                 confs.append(float(confidence))
-    # print(len(bbox))
     indices = cv2.dnn.NMSBoxes(bbox, confs, confThreshold, nmsThreshold)
-    # print(indices)
+    print(len(list(filter(lambda i: classNames[classIds[i]] == 'car', indices))))
 
     for i in indices:
-        # i = i[0]
-        print(classNames[classIds[i]])
+        # print(classNames[classIds[i]])
         box = bbox[i]
         x, y, w, h = box[0], box[1], box[2], box[3]
-        if classNames[classIds[i]] == 'bird':
-            found_bird = True
-        elif classNames[classIds[i]] == 'cat':
-            found_cat = True
 
         if classNames[classIds[i]] == 'car':
             cv2.rectangle(im, (x, y), (x + w, y + h), (255, 0, 255), 2)
             cv2.putText(im, f'{classNames[classIds[i]].upper()} {int(confs[i] * 100)}%', (x, y - 10),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 0, 255), 2)
-            print(f'car: {len(indices)}')
-            print(found_bird)
-
-        if classNames[classIds[i]] == 'cat':
-            cv2.rectangle(im, (x, y), (x + w, y + h), (255, 0, 255), 2)
-            cv2.putText(im, f'{classNames[classIds[i]].upper()} {int(confs[i] * 100)}%', (x, y - 10),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 0, 255), 2)
-            print(found_cat)
-
-        if found_cat and found_bird:
-            print('alert')
 
 
 while True:
